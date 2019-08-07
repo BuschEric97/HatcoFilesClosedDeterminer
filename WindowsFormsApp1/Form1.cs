@@ -43,6 +43,7 @@ namespace WindowsFormsApp1
 
             if (xlWorkbookAIM != null && xlWorkbookMLS != null) // check that excel files opened properly
             {
+                // open worksheets and range in excel files for use
                 Excel._Worksheet xlWorksheetMLS = xlWorkbookMLS.Sheets[1];
                 Excel._Worksheet xlWorksheetAIM = xlWorkbookAIM.Sheets[1];
                 Excel.Range xlRangeMLS = xlWorksheetMLS.UsedRange;
