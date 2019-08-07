@@ -27,12 +27,22 @@ namespace WindowsFormsApp1
             Console.WriteLine("AIM Input File Path: " + AIM_Input_File.Text);
             Console.WriteLine("Output File Path: " + Output_File.Text);
 
+            // open all excel files for use
+            Excel.Application xlApp = new Excel.Application();
+            Excel.Workbook xlWorkbookMLS = null;
+            Excel.Workbook xlWorkbookAIM = null;
             try
             {
-                // open all excel files for use
-                Excel.Application xlApp = new Excel.Application();
-                Excel.Workbook xlWorkbookMLS = xlApp.Workbooks.Open(MLS_Input_File.Text);
-                Excel.Workbook xlWorkbookAIM = xlApp.Workbooks.Open(AIM_Input_File.Text);
+                xlWorkbookMLS = xlApp.Workbooks.Open(MLS_Input_File.Text);
+                xlWorkbookAIM = xlApp.Workbooks.Open(AIM_Input_File.Text);
+            }
+            catch (Exception ex) // catch possible "file could not open" exception
+            {
+                MessageBox.Show(ex.ToString());
+            }
+
+            if (xlWorkbookAIM != null && xlWorkbookMLS != null) // check that excel files opened properly
+            {
                 Excel._Worksheet xlWorksheetMLS = xlWorkbookMLS.Sheets[1];
                 Excel._Worksheet xlWorksheetAIM = xlWorkbookAIM.Sheets[1];
                 Excel.Range xlRangeMLS = xlWorksheetMLS.UsedRange;
@@ -45,7 +55,7 @@ namespace WindowsFormsApp1
                 int colCountAIM = xlRangeAIM.Columns.Count;
 
                 // relevant columns indeces
-                int MLSOwnerCol = 0, MLSAddressCol = 0, MLSCloseDateCol = 0, MLSGFCol = 0, 
+                int MLSOwnerCol = 0, MLSAddressCol = 0, MLSCloseDateCol = 0, MLSGFCol = 0,
                     AIMFileNoCol = 0, AIMCloseDateCol = 0, AIMAddressCol = 0, AIMSellerCol = 0;
 
                 // determine the columns in MLS file that have relevant information
@@ -110,10 +120,6 @@ namespace WindowsFormsApp1
                 // quit and release excel app
                 xlApp.Quit();
                 Marshal.ReleaseComObject(xlApp);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString());
             }
         }
     }
