@@ -86,7 +86,32 @@ namespace WindowsFormsApp1
                     }
                 }
 
+                // loop through the files and do the main work
+                for (int i = 2; i <= rowCountMLS; i++)
+                {
+                    if (xlRangeMLS.Cells[i, MLSCloseDateCol].Value != null) // check that the next MLS close date cell is not empty
+                    {
+                        // parse MLS close date into a DateTime struct
+                        string MLSRawCloseDate = xlRangeMLS.Cells[i, MLSCloseDateCol].Value.ToString();
+                        DateTime MLSCloseDate = DateTime.Parse(MLSRawCloseDate);
 
+                        for (int j = 2; j <= rowCountAIM; j++)
+                        {
+                            if (xlRangeAIM.Cells[j, AIMCloseDateCol].Value != null) // check that the next AIM close date cell is not empty
+                            {
+                                // parse AIM close date into a DateTime struct
+                                string AIMRawCloseDate = xlRangeAIM.Cells[j, AIMCloseDateCol].Value.ToString();
+                                DateTime AIMCloseDate = DateTime.Parse(AIMRawCloseDate);
+
+                                if ((MLSCloseDate - AIMCloseDate).TotalDays <= 15) // check that the two close dates are within 15 days of each other
+                                {
+                                    Console.WriteLine("Found match in days between row " + i
+                                        + " in MLS file and row " + j + " in AIM file");
+                                }
+                            }
+                        }
+                    }
+                }
 
                 // cleanup
                 GC.Collect();
