@@ -81,14 +81,14 @@ namespace WindowsFormsApp1
                 }
 
                 // print relevant columns indeces for debugging purposes
-                Console.WriteLine("MLSOwnerCol: " + MLSOwnerCol.ToString());
-                Console.WriteLine("MLSAddressCol: " + MLSAddressCol.ToString());
-                Console.WriteLine("MLSCloseDateCol: " + MLSCloseDateCol.ToString());
-                Console.WriteLine("MLSGFCol: " + MLSGFCol.ToString());
-                Console.WriteLine("AimFileNoCol: " + AIMFileNoCol.ToString());
-                Console.WriteLine("AIMCloseDateCol: " + AIMCloseDateCol.ToString());
-                Console.WriteLine("AIMAddressCol: " + AIMAddressCol.ToString());
-                Console.WriteLine("AIMSellerCol: " + AIMSellerCol.ToString());
+                Console.WriteLine("MLSOwnerCol: " + MLSOwnerCol.ToString() + ", "
+                    + "MLSAddressCol: " + MLSAddressCol.ToString() + ", " + "MLSCloseDateCol: "
+                    + MLSCloseDateCol.ToString() + ", " + "MLSGFCol: " + MLSGFCol.ToString() + "\n"
+                    + "AimFileNoCol: " + AIMFileNoCol.ToString() + ", " + "AIMCloseDateCol: "
+                    + AIMCloseDateCol.ToString() + ", " + "AIMAddressCol: " + AIMAddressCol.ToString()
+                    + ", " + "AIMSellerCol: " + AIMSellerCol.ToString());
+
+
 
                 // cleanup
                 GC.Collect();
@@ -113,7 +113,7 @@ namespace WindowsFormsApp1
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                MessageBox.Show(ex.ToString());
             }
         }
     }
