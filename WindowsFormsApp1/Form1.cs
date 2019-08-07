@@ -22,11 +22,6 @@ namespace WindowsFormsApp1
 
         private void button1_Click(object sender, EventArgs e)
         {
-            // print data from text boxes to console for debugging purposes
-            Console.WriteLine("MLS Input File Path: " + MLS_Input_File.Text);
-            Console.WriteLine("AIM Input File Path: " + AIM_Input_File.Text);
-            Console.WriteLine("Output File Path: " + Output_File.Text);
-
             // open all excel files for use
             Excel.Application xlApp = new Excel.Application();
             Excel.Workbook xlWorkbookMLS = null;
@@ -90,14 +85,6 @@ namespace WindowsFormsApp1
                             AIMSellerCol = i;
                     }
                 }
-
-                // print relevant columns indeces for debugging purposes
-                Console.WriteLine("MLSOwnerCol: " + MLSOwnerCol.ToString() + ", "
-                    + "MLSAddressCol: " + MLSAddressCol.ToString() + ", " + "MLSCloseDateCol: "
-                    + MLSCloseDateCol.ToString() + ", " + "MLSGFCol: " + MLSGFCol.ToString() + "\n"
-                    + "AimFileNoCol: " + AIMFileNoCol.ToString() + ", " + "AIMCloseDateCol: "
-                    + AIMCloseDateCol.ToString() + ", " + "AIMAddressCol: " + AIMAddressCol.ToString()
-                    + ", " + "AIMSellerCol: " + AIMSellerCol.ToString());
 
 
 
