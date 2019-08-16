@@ -27,7 +27,7 @@ namespace WindowsFormsApp1
             try
             {
                 // run main determiner function to perform the main function of the program
-                det.mainDeterminer(MLS_Input_File.Text, AIM_Input_File.Text);
+                det.mainDeterminer(MLS_Input_File.Text, AIM_Input_File.Text, 5);
             }
             catch (Exception ex)
             {

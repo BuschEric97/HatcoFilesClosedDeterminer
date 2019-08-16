@@ -9,9 +9,9 @@ using System.Runtime.InteropServices;
 
 namespace WindowsFormsApp1
 {
-    class Determiner
+    public class Determiner
     {
-        public void mainDeterminer (string MLSFileName, string AIMFileName)
+        public void mainDeterminer (string MLSFileName, string AIMFileName, int addressThreshold)
         {
             // open all excel files for use
             Excel.Application xlApp = new Excel.Application();
@@ -78,26 +78,55 @@ namespace WindowsFormsApp1
                 }
 
                 // loop through the files and do the main work
-                for (int i = 2; i <= rowCountMLS; i++)
+                for (int currentMLSFile = 2; currentMLSFile <= rowCountMLS; currentMLSFile++)
                 {
-                    if (xlRangeMLS.Cells[i, MLSCloseDateCol].Value != null) // check that the next MLS close date cell is not empty
+                    // initialize the variables that will determine if file in row closed
+                    bool dateClosedMatch = false;
+                    bool addressMatch = false;
+                    bool ownerMatch = false;
+
+                    /// determine if date closed is a match
+                    if (xlRangeMLS.Cells[currentMLSFile, MLSCloseDateCol].Value != null) // check that the next MLS close date cell is not empty
                     {
                         // parse MLS close date into a DateTime struct
-                        string MLSRawCloseDate = xlRangeMLS.Cells[i, MLSCloseDateCol].Value.ToString();
+                        string MLSRawCloseDate = xlRangeMLS.Cells[currentMLSFile, MLSCloseDateCol].Value.ToString();
                         DateTime MLSCloseDate = DateTime.Parse(MLSRawCloseDate);
 
-                        for (int j = 2; j <= rowCountAIM; j++)
+                        for (int currentAIMFile = 2; currentAIMFile <= rowCountAIM; currentAIMFile++)
                         {
-                            if (xlRangeAIM.Cells[j, AIMCloseDateCol].Value != null) // check that the next AIM close date cell is not empty
+                            if (xlRangeAIM.Cells[currentAIMFile, AIMCloseDateCol].Value != null) // check that the next AIM close date cell is not empty
                             {
                                 // parse AIM close date into a DateTime struct
-                                string AIMRawCloseDate = xlRangeAIM.Cells[j, AIMCloseDateCol].Value.ToString();
+                                string AIMRawCloseDate = xlRangeAIM.Cells[currentAIMFile, AIMCloseDateCol].Value.ToString();
                                 DateTime AIMCloseDate = DateTime.Parse(AIMRawCloseDate);
 
                                 if ((MLSCloseDate - AIMCloseDate).TotalDays <= 15) // check that the two close dates are within 15 days of each other
                                 {
-                                    Console.WriteLine("Found match in days between row " + i
-                                        + " in MLS file and row " + j + " in AIM file");
+                                    dateClosedMatch = true;
+                                    Console.WriteLine("Found match in days between row " + currentMLSFile
+                                        + " in MLS xl file and row " + currentAIMFile + " in AIM xl file");
+                                }
+                            }
+                        }
+                    }
+
+
+                    /// determine if property addresses are a match only if date closed is already a match
+                    if (dateClosedMatch && xlRangeMLS.Cells[currentMLSFile, MLSAddressCol].Value != null)
+                    {
+                        for (int currentAIMFile = 2; currentAIMFile <= rowCountAIM; currentAIMFile++)
+                        {
+                            if (xlRangeAIM.Cells[currentAIMFile, AIMAddressCol].Value != null)
+                            {
+                                string addressMLS = xlRangeMLS.Cells[currentMLSFile, MLSAddressCol].Value.ToString();
+                                string addressAIM = xlRangeAIM.Cells[currentAIMFile, AIMAddressCol].Value.ToString();
+                                int addressDistance = StringDistance.GetStringDistance(addressMLS, addressAIM); // get distance between the two strings
+
+                                if (addressDistance <= addressThreshold)
+                                {
+                                    addressMatch = true;
+                                    Console.WriteLine("Found match in address between row " + currentMLSFile
+                                        + " in MLS xl file and row " + currentAIMFile + " in AIM xl file");
                                 }
                             }
                         }
