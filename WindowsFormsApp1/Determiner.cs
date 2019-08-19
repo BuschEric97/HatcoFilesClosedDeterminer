@@ -11,7 +11,7 @@ namespace WindowsFormsApp1
 {
     public class Determiner
     {
-        public void mainDeterminer (string MLSFileName, string AIMFileName, int addressThreshold)
+        public void mainDeterminer (string MLSFileName, string AIMFileName, int addressThreshold, int ownerThreshold)
         {
             // open all excel files for use
             Excel.Application xlApp = new Excel.Application();
@@ -77,6 +77,7 @@ namespace WindowsFormsApp1
                     }
                 }
 
+
                 // loop through the files and do the main work
                 for (int currentMLSFile = 2; currentMLSFile <= rowCountMLS; currentMLSFile++)
                 {
@@ -84,6 +85,7 @@ namespace WindowsFormsApp1
                     bool dateClosedMatch = false;
                     bool addressMatch = false;
                     bool ownerMatch = false;
+                    int ClosedGFNumRow = 2;
 
                     /// determine if date closed is a match
                     if (xlRangeMLS.Cells[currentMLSFile, MLSCloseDateCol].Value != null) // check that the next MLS close date cell is not empty
@@ -131,7 +133,42 @@ namespace WindowsFormsApp1
                             }
                         }
                     }
+
+                    /// determine if owner/seller name are a match only if date closed is already a match
+                    if (dateClosedMatch && xlRangeMLS.Cells[currentMLSFile, MLSOwnerCol].Value != null)
+                    {
+                        for (int currentAIMFile = 2; currentAIMFile <= rowCountAIM; currentAIMFile++)
+                        {
+                            if (xlRangeAIM.Cells[currentAIMFile, AIMSellerCol].Value != null)
+                            {
+                                string owner = xlRangeMLS.Cells[currentMLSFile, MLSOwnerCol].Value.ToString();
+                                string seller = xlRangeAIM.Cells[currentAIMFile, AIMSellerCol].Value.ToString();
+                                int ownerDistance = StringDistance.GetStringDistance(owner, seller); // get distance between the two strings
+
+                                if (ownerDistance <= ownerThreshold)
+                                {
+                                    ownerMatch = true;
+                                    ClosedGFNumRow = currentAIMFile;
+                                    Console.WriteLine("Found match in owner/seller between row " + currentMLSFile
+                                        + " in MLS xl file and row " + currentAIMFile + " in AIM xl file");
+                                    break; // if a match is found, there's no need to search any further
+                                }
+                            }
+                        }
+                    }
+
+                    /// determine whether the file was closed with hatco or not and print to xl file
+                    if (dateClosedMatch && addressMatch && ownerMatch)
+                    {
+                        Console.WriteLine("File on row " + currentMLSFile + " of MLS xl file closed with GF #"
+                            + xlRangeAIM.Cells[ClosedGFNumRow, AIMFileNoCol].Value.ToString());
+                    }
+                    else
+                    {
+                        Console.WriteLine("File on row " + currentMLSFile + " did not close");
+                    }
                 }
+
 
                 // cleanup
                 GC.Collect();
