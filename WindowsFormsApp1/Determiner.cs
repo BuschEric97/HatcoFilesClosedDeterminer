@@ -11,7 +11,17 @@ namespace WindowsFormsApp1
 {
     public class Determiner
     {
-        public void mainDeterminer (string MLSFileName, string AIMFileName, int addressThreshold, int ownerThreshold)
+        /// <summary>
+        /// run through each file in MLSFileName and check against AIMFileName files
+        /// to determine whether the files in MLSFileName closed with hatco.
+        /// 
+        /// addressThreshold and ownerThreshold are percentages (between 0 and 1)
+        /// </summary>
+        /// <param name="MLSFileName"></param>
+        /// <param name="AIMFileName"></param>
+        /// <param name="addressThreshold"></param>
+        /// <param name="ownerThreshold"></param>
+        public void mainDeterminer (string MLSFileName, string AIMFileName, double addressThreshold, double ownerThreshold)
         {
             // open all excel files for use
             Excel.Application xlApp = new Excel.Application();
@@ -124,7 +134,7 @@ namespace WindowsFormsApp1
                                 string addressAIM = xlRangeAIM.Cells[currentAIMFile, AIMAddressCol].Value.ToString();
                                 int addressDistance = StringDistance.GetStringDistance(addressMLS, addressAIM); // get distance between the two strings
 
-                                if (addressDistance <= addressThreshold)
+                                if (addressDistance <= Math.Ceiling(addressThreshold * addressMLS.Length))
                                 {
                                     addressMatch = true;
                                     Console.WriteLine("Found match in address between row " + currentMLSFile
@@ -134,8 +144,8 @@ namespace WindowsFormsApp1
                         }
                     }
 
-                    /// determine if owner/seller name are a match only if date closed is already a match
-                    if (dateClosedMatch && xlRangeMLS.Cells[currentMLSFile, MLSOwnerCol].Value != null)
+                    /// determine if owner/seller name are a match only if date closed and addrees are already a match
+                    if (dateClosedMatch && addressMatch && xlRangeMLS.Cells[currentMLSFile, MLSOwnerCol].Value != null)
                     {
                         for (int currentAIMFile = 2; currentAIMFile <= rowCountAIM; currentAIMFile++)
                         {
@@ -145,7 +155,7 @@ namespace WindowsFormsApp1
                                 string seller = xlRangeAIM.Cells[currentAIMFile, AIMSellerCol].Value.ToString();
                                 int ownerDistance = StringDistance.GetStringDistance(owner, seller); // get distance between the two strings
 
-                                if (ownerDistance <= ownerThreshold)
+                                if (ownerDistance <= Math.Ceiling(ownerThreshold * owner.Length))
                                 {
                                     ownerMatch = true;
                                     ClosedGFNumRow = currentAIMFile;
