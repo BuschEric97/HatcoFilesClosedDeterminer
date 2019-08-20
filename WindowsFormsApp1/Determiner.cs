@@ -15,13 +15,15 @@ namespace WindowsFormsApp1
         /// run through each file in MLSFileName and check against AIMFileName files
         /// to determine whether the files in MLSFileName closed with hatco.
         /// 
-        /// addressThreshold and ownerThreshold are percentages (between 0 and 1)
+        /// addressThreshold, addressThresholdWeak,
+        /// ownerThreshold, and ownerThresholdWeak are percentages (between 0 and 1)
         /// </summary>
         /// <param name="MLSFileName"></param>
         /// <param name="AIMFileName"></param>
         /// <param name="addressThreshold"></param>
         /// <param name="ownerThreshold"></param>
-        public void mainDeterminer (string MLSFileName, string AIMFileName, double addressThreshold, double ownerThreshold)
+        public void mainDeterminer (string MLSFileName, string AIMFileName, double addressThreshold,
+            double addressThresholdWeak, double ownerThreshold, double ownerThresholdWeak)
         {
             // open all excel files for use
             Excel.Application xlApp = new Excel.Application();
@@ -92,9 +94,12 @@ namespace WindowsFormsApp1
                 for (int currentMLSFile = 2; currentMLSFile <= rowCountMLS; currentMLSFile++)
                 {
                     // initialize the variables that will determine if file in row closed
+                    //
+                    // For addressMatch and ownerMatch: 0 = no match,
+                    // 1 = likely a match, 2 = definitely a match
                     bool dateClosedMatch = false;
-                    bool addressMatch = false;
-                    bool ownerMatch = false;
+                    int addressMatch = 0;
+                    int ownerMatch = 0;
                     int ClosedGFNumRow = 2;
 
                     /// determine if date closed is a match
@@ -136,8 +141,14 @@ namespace WindowsFormsApp1
 
                                 if (addressDistance <= Math.Ceiling(addressThreshold * addressMLS.Length))
                                 {
-                                    addressMatch = true;
+                                    addressMatch = 2;
                                     Console.WriteLine("Found match in address between row " + currentMLSFile
+                                        + " in MLS xl file and row " + currentAIMFile + " in AIM xl file");
+                                }
+                                else if (addressDistance <= Math.Ceiling(addressThresholdWeak * addressMLS.Length))
+                                {
+                                    addressMatch = 1;
+                                    Console.WriteLine("Found likely match in address between row " + currentMLSFile
                                         + " in MLS xl file and row " + currentAIMFile + " in AIM xl file");
                                 }
                             }
@@ -145,7 +156,7 @@ namespace WindowsFormsApp1
                     }
 
                     /// determine if owner/seller name are a match only if date closed and addrees are already a match
-                    if (dateClosedMatch && addressMatch && xlRangeMLS.Cells[currentMLSFile, MLSOwnerCol].Value != null)
+                    if (dateClosedMatch && addressMatch > 0 && xlRangeMLS.Cells[currentMLSFile, MLSOwnerCol].Value != null)
                     {
                         for (int currentAIMFile = 2; currentAIMFile <= rowCountAIM; currentAIMFile++)
                         {
@@ -157,24 +168,38 @@ namespace WindowsFormsApp1
 
                                 if (ownerDistance <= Math.Ceiling(ownerThreshold * owner.Length))
                                 {
-                                    ownerMatch = true;
+                                    ownerMatch = 2;
                                     ClosedGFNumRow = currentAIMFile;
                                     Console.WriteLine("Found match in owner/seller between row " + currentMLSFile
                                         + " in MLS xl file and row " + currentAIMFile + " in AIM xl file");
                                     break; // if a match is found, there's no need to search any further
+                                }
+                                else if (ownerDistance <= Math.Ceiling(ownerThresholdWeak * owner.Length))
+                                {
+                                    ownerMatch = 1;
+                                    Console.WriteLine("Found likely match in owner/seller between row " + currentMLSFile
+                                        + " in MLS xl file and row " + currentAIMFile + " in AIM xl file");
                                 }
                             }
                         }
                     }
 
                     /// determine whether the file was closed with hatco or not and print to xl file
-                    if (dateClosedMatch && addressMatch && ownerMatch)
+                    if (dateClosedMatch && addressMatch == 2 && ownerMatch == 2)
                     {
+                        string closedGF = xlRangeAIM.Cells[ClosedGFNumRow, AIMFileNoCol].Value.ToString();
+                        xlRangeMLS.Cells[currentMLSFile, MLSGFCol].Value = closedGF;
                         Console.WriteLine("File on row " + currentMLSFile + " of MLS xl file closed with GF #"
-                            + xlRangeAIM.Cells[ClosedGFNumRow, AIMFileNoCol].Value.ToString());
+                            + closedGF);
+                    }
+                    else if (dateClosedMatch && addressMatch > 0 && ownerMatch > 0)
+                    {
+                        xlRangeMLS.Cells[currentMLSFile, MLSGFCol].Value = "likely closed";
+                        Console.WriteLine("File on row " + currentMLSFile + " likely closed");
                     }
                     else
                     {
+                        xlRangeMLS.Cells[currentMLSFile, MLSGFCol].Value = "did not close";
                         Console.WriteLine("File on row " + currentMLSFile + " did not close");
                     }
                 }
