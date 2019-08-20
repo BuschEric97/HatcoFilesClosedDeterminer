@@ -139,13 +139,14 @@ namespace WindowsFormsApp1
                                 string addressAIM = xlRangeAIM.Cells[currentAIMFile, AIMAddressCol].Value.ToString();
                                 int addressDistance = StringDistance.GetStringDistance(addressMLS, addressAIM); // get distance between the two strings
 
-                                if (addressDistance <= Math.Ceiling(addressThreshold * addressMLS.Length))
+                                // check addressDistance against the percentage threshold of the longer test string to see if it is a match
+                                if (addressDistance <= Math.Ceiling(addressThreshold * Math.Max(addressMLS.Length, addressAIM.Length)))
                                 {
                                     addressMatch = 2;
                                     Console.WriteLine("Found match in address between row " + currentMLSFile
                                         + " in MLS xl file and row " + currentAIMFile + " in AIM xl file");
                                 }
-                                else if (addressDistance <= Math.Ceiling(addressThresholdWeak * addressMLS.Length))
+                                else if (addressDistance <= Math.Ceiling(addressThresholdWeak * Math.Max(addressMLS.Length, addressAIM.Length)))
                                 {
                                     addressMatch = 1;
                                     Console.WriteLine("Found likely match in address between row " + currentMLSFile
@@ -166,7 +167,8 @@ namespace WindowsFormsApp1
                                 string seller = xlRangeAIM.Cells[currentAIMFile, AIMSellerCol].Value.ToString();
                                 int ownerDistance = StringDistance.GetStringDistance(owner, seller); // get distance between the two strings
 
-                                if (ownerDistance <= Math.Ceiling(ownerThreshold * owner.Length))
+                                // check ownerDistance against the percentage threshold of the longer test string to see if it is a match
+                                if (ownerDistance <= Math.Ceiling(ownerThreshold * Math.Max(owner.Length, seller.Length)))
                                 {
                                     ownerMatch = 2;
                                     ClosedGFNumRow = currentAIMFile;
@@ -174,7 +176,7 @@ namespace WindowsFormsApp1
                                         + " in MLS xl file and row " + currentAIMFile + " in AIM xl file");
                                     break; // if a match is found, there's no need to search any further
                                 }
-                                else if (ownerDistance <= Math.Ceiling(ownerThresholdWeak * owner.Length))
+                                else if (ownerDistance <= Math.Ceiling(ownerThresholdWeak * Math.Max(owner.Length, seller.Length)))
                                 {
                                     ownerMatch = 1;
                                     Console.WriteLine("Found likely match in owner/seller between row " + currentMLSFile
