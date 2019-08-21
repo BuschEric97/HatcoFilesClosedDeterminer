@@ -218,7 +218,8 @@ namespace WindowsFormsApp1
                 Marshal.ReleaseComObject(xlWorksheetMLS);
                 Marshal.ReleaseComObject(xlWorksheetAIM);
 
-                // close and release workbooks
+                // save, close, and release workbooks
+                xlWorkbookMLS.Save();
                 xlWorkbookMLS.Close();
                 xlWorkbookAIM.Close();
                 Marshal.ReleaseComObject(xlWorkbookMLS);

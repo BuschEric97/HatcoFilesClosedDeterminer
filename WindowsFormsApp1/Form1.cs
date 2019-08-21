@@ -35,5 +35,23 @@ namespace WindowsFormsApp1
                 MessageBox.Show(ex.ToString());
             }
         }
+
+        private void OpenMLS_Click(object sender, EventArgs e)
+        {
+            Console.WriteLine("entered OpenMLS_Click()");
+            openFileDialogMLS.ShowHelp = true;
+            Console.WriteLine("set openFileDialogMLS.ShowHelp = true");
+            openFileDialogMLS.ShowDialog();
+            Console.WriteLine("exited openFileDialogMLS.ShowDialog()");
+            MLS_Input_File.Text = openFileDialogMLS.FileName;
+            Console.WriteLine("exited OpenMLS_Click()");
+        }
+
+        private void OpenAIM_Click(object sender, EventArgs e)
+        {
+            openFileDialogAIM.ShowHelp = true;
+            openFileDialogAIM.ShowDialog();
+            AIM_Input_File.Text = openFileDialogAIM.FileName;
+        }
     }
 }

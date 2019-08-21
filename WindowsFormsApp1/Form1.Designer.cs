@@ -33,6 +33,10 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
+            this.openFileDialogMLS = new System.Windows.Forms.OpenFileDialog();
+            this.OpenMLS = new System.Windows.Forms.Button();
+            this.OpenAIM = new System.Windows.Forms.Button();
+            this.openFileDialogAIM = new System.Windows.Forms.OpenFileDialog();
             this.SuspendLayout();
             // 
             // MLS_Input_File
@@ -74,20 +78,50 @@
             // button1
             // 
             this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button1.Location = new System.Drawing.Point(627, 52);
+            this.button1.Location = new System.Drawing.Point(31, 182);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(222, 88);
+            this.button1.Size = new System.Drawing.Size(527, 88);
             this.button1.TabIndex = 6;
             this.button1.Text = "Run";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // openFileDialogMLS
+            // 
+            this.openFileDialogMLS.FileName = "MLS.xlsx";
+            // 
+            // OpenMLS
+            // 
+            this.OpenMLS.Location = new System.Drawing.Point(564, 50);
+            this.OpenMLS.Name = "OpenMLS";
+            this.OpenMLS.Size = new System.Drawing.Size(75, 23);
+            this.OpenMLS.TabIndex = 7;
+            this.OpenMLS.Text = "Open";
+            this.OpenMLS.UseVisualStyleBackColor = true;
+            this.OpenMLS.Click += new System.EventHandler(this.OpenMLS_Click);
+            // 
+            // OpenAIM
+            // 
+            this.OpenAIM.Location = new System.Drawing.Point(564, 120);
+            this.OpenAIM.Name = "OpenAIM";
+            this.OpenAIM.Size = new System.Drawing.Size(75, 23);
+            this.OpenAIM.TabIndex = 8;
+            this.OpenAIM.Text = "Open";
+            this.OpenAIM.UseVisualStyleBackColor = true;
+            this.OpenAIM.Click += new System.EventHandler(this.OpenAIM_Click);
+            // 
+            // openFileDialogAIM
+            // 
+            this.openFileDialogAIM.FileName = "AIM.xlsx";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(904, 185);
+            this.ClientSize = new System.Drawing.Size(904, 303);
+            this.Controls.Add(this.OpenAIM);
+            this.Controls.Add(this.OpenMLS);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
@@ -108,6 +142,10 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.OpenFileDialog openFileDialogMLS;
+        private System.Windows.Forms.Button OpenMLS;
+        private System.Windows.Forms.Button OpenAIM;
+        private System.Windows.Forms.OpenFileDialog openFileDialogAIM;
     }
 }
 
