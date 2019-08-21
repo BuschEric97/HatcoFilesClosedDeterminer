@@ -220,8 +220,11 @@ namespace WindowsFormsApp1
 
                 // save, close, and release workbooks
                 xlWorkbookMLS.Save();
+                Console.WriteLine("saved MLS workbook");
                 xlWorkbookMLS.Close();
+                Console.WriteLine("closed MLS workbook");
                 xlWorkbookAIM.Close();
+                Console.WriteLine("closed AIM workbook");
                 Marshal.ReleaseComObject(xlWorkbookMLS);
                 Marshal.ReleaseComObject(xlWorkbookAIM);
 
