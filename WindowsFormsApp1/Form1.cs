@@ -28,6 +28,7 @@ namespace WindowsFormsApp1
             {
                 // run main determiner function to perform the main function of the program
                 det.mainDeterminer(MLS_Input_File.Text, AIM_Input_File.Text, 0.2, 0.2, 0.5, 0.5);
+                MessageBox.Show("Complete!");
             }
             catch (Exception ex)
             {
