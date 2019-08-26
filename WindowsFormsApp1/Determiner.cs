@@ -80,7 +80,7 @@ namespace WindowsFormsApp1
                     {
                         if (xlRangeAIM.Cells[1, i].Value2.ToString().Contains("File Number"))
                             AIMFileNoCol = i;
-                        else if (xlRangeAIM.Cells[1, i].Value2.ToString().Contains("Closing Date"))
+                        else if (xlRangeAIM.Cells[1, i].Value2.ToString().Contains("Date"))
                             AIMCloseDateCol = i;
                         else if (xlRangeAIM.Cells[1, i].Value2.ToString().Contains("Property Address"))
                             AIMAddressCol = i;
@@ -103,7 +103,7 @@ namespace WindowsFormsApp1
                     int ClosedGFNumRow = 2;
 
                     /// determine if date closed is a match
-                    if (xlRangeMLS.Cells[currentMLSFile, MLSCloseDateCol].Value != null) // check that the next MLS close date cell is not empty
+                    if (xlRangeMLS.Cells[currentMLSFile, MLSCloseDateCol].Value2 != null) // check that the next MLS close date cell is not empty
                     {
                         // parse MLS close date into a DateTime struct
                         string MLSRawCloseDate = xlRangeMLS.Cells[currentMLSFile, MLSCloseDateCol].Value.ToString();
@@ -111,7 +111,7 @@ namespace WindowsFormsApp1
 
                         for (int currentAIMFile = 2; currentAIMFile <= rowCountAIM; currentAIMFile++)
                         {
-                            if (xlRangeAIM.Cells[currentAIMFile, AIMCloseDateCol].Value != null) // check that the next AIM close date cell is not empty
+                            if (xlRangeAIM.Cells[currentAIMFile, AIMCloseDateCol].Value2 != null) // check that the next AIM close date cell is not empty
                             {
                                 // parse AIM close date into a DateTime struct
                                 string AIMRawCloseDate = xlRangeAIM.Cells[currentAIMFile, AIMCloseDateCol].Value.ToString();
@@ -129,14 +129,14 @@ namespace WindowsFormsApp1
 
 
                     /// determine if property addresses are a match only if date closed is already a match
-                    if (dateClosedMatch && xlRangeMLS.Cells[currentMLSFile, MLSAddressCol].Value != null)
+                    if (dateClosedMatch && xlRangeMLS.Cells[currentMLSFile, MLSAddressCol].Value2 != null)
                     {
                         for (int currentAIMFile = 2; currentAIMFile <= rowCountAIM; currentAIMFile++)
                         {
-                            if (xlRangeAIM.Cells[currentAIMFile, AIMAddressCol].Value != null)
+                            if (xlRangeAIM.Cells[currentAIMFile, AIMAddressCol].Value2 != null)
                             {
-                                string addressMLS = xlRangeMLS.Cells[currentMLSFile, MLSAddressCol].Value.ToString();
-                                string addressAIM = xlRangeAIM.Cells[currentAIMFile, AIMAddressCol].Value.ToString();
+                                string addressMLS = xlRangeMLS.Cells[currentMLSFile, MLSAddressCol].Value2.ToString();
+                                string addressAIM = xlRangeAIM.Cells[currentAIMFile, AIMAddressCol].Value2.ToString();
                                 int addressDistance = StringDistance.GetStringDistance(addressMLS, addressAIM); // get distance between the two strings
 
                                 // check addressDistance against the percentage threshold of the longer test string to see if it is a match
@@ -157,14 +157,14 @@ namespace WindowsFormsApp1
                     }
 
                     /// determine if owner/seller name are a match only if date closed and addrees are already a match
-                    if (dateClosedMatch && addressMatch > 0 && xlRangeMLS.Cells[currentMLSFile, MLSOwnerCol].Value != null)
+                    if (dateClosedMatch && addressMatch > 0 && xlRangeMLS.Cells[currentMLSFile, MLSOwnerCol].Value2 != null)
                     {
                         for (int currentAIMFile = 2; currentAIMFile <= rowCountAIM; currentAIMFile++)
                         {
-                            if (xlRangeAIM.Cells[currentAIMFile, AIMSellerCol].Value != null)
+                            if (xlRangeAIM.Cells[currentAIMFile, AIMSellerCol].Value2 != null)
                             {
-                                string owner = xlRangeMLS.Cells[currentMLSFile, MLSOwnerCol].Value.ToString();
-                                string seller = xlRangeAIM.Cells[currentAIMFile, AIMSellerCol].Value.ToString();
+                                string owner = xlRangeMLS.Cells[currentMLSFile, MLSOwnerCol].Value2.ToString();
+                                string seller = xlRangeAIM.Cells[currentAIMFile, AIMSellerCol].Value2.ToString();
                                 int ownerDistance = StringDistance.GetStringDistance(owner, seller); // get distance between the two strings
 
                                 // check ownerDistance against the percentage threshold of the longer test string to see if it is a match
