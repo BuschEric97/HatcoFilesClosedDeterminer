@@ -37,6 +37,8 @@
             this.OpenMLS = new System.Windows.Forms.Button();
             this.OpenAIM = new System.Windows.Forms.Button();
             this.openFileDialogAIM = new System.Windows.Forms.OpenFileDialog();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.label3 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // MLS_Input_File
@@ -78,9 +80,9 @@
             // button1
             // 
             this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button1.Location = new System.Drawing.Point(31, 182);
+            this.button1.Location = new System.Drawing.Point(31, 183);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(527, 88);
+            this.button1.Size = new System.Drawing.Size(608, 88);
             this.button1.TabIndex = 6;
             this.button1.Text = "Run";
             this.button1.UseVisualStyleBackColor = true;
@@ -114,12 +116,30 @@
             // 
             this.openFileDialogAIM.FileName = "AIM.xlsx";
             // 
+            // progressBar1
+            // 
+            this.progressBar1.Location = new System.Drawing.Point(31, 316);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(608, 23);
+            this.progressBar1.TabIndex = 9;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(31, 297);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(48, 13);
+            this.label3.TabIndex = 10;
+            this.label3.Text = "Progress";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(904, 303);
+            this.ClientSize = new System.Drawing.Size(670, 366);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.OpenAIM);
             this.Controls.Add(this.OpenMLS);
             this.Controls.Add(this.button1);
@@ -146,6 +166,8 @@
         private System.Windows.Forms.Button OpenMLS;
         private System.Windows.Forms.Button OpenAIM;
         private System.Windows.Forms.OpenFileDialog openFileDialogAIM;
+        private System.Windows.Forms.ProgressBar progressBar1;
+        private System.Windows.Forms.Label label3;
     }
 }
 

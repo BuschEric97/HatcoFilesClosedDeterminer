@@ -17,13 +17,15 @@ namespace WindowsFormsApp1
         /// 
         /// addressThreshold, addressThresholdWeak,
         /// ownerThreshold, and ownerThresholdWeak are percentages (between 0 and 1)
+        /// 
+        /// progress is used to update the windowsform's progress bar
         /// </summary>
         /// <param name="MLSFileName"></param>
         /// <param name="AIMFileName"></param>
         /// <param name="addressThreshold"></param>
         /// <param name="ownerThreshold"></param>
         public void mainDeterminer (string MLSFileName, string AIMFileName, double addressThreshold,
-            double addressThresholdWeak, double ownerThreshold, double ownerThresholdWeak)
+            double addressThresholdWeak, double ownerThreshold, double ownerThresholdWeak, IProgress<int> progress)
         {
             // open all excel files for use
             Excel.Application xlApp = new Excel.Application();
@@ -89,6 +91,9 @@ namespace WindowsFormsApp1
                     }
                 }
 
+                // set the progress bar to the first little tick
+                if (progress != null)
+                    progress.Report(100 / rowCountMLS);
 
                 // loop through the files and do the main work
                 for (int currentMLSFile = 2; currentMLSFile <= rowCountMLS; currentMLSFile++)
@@ -204,6 +209,10 @@ namespace WindowsFormsApp1
                         xlRangeMLS.Cells[currentMLSFile, MLSGFCol].Value = "did not close";
                         Console.WriteLine("File on row " + currentMLSFile + " did not close");
                     }
+
+                    // update progress bar after each row of MLS file
+                    if (progress != null)
+                        progress.Report(currentMLSFile * 100 / rowCountMLS);
                 }
 
 

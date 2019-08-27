@@ -21,13 +21,20 @@ namespace WindowsFormsApp1
             InitializeComponent();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private async void button1_Click(object sender, EventArgs e)
         {
             Determiner det = new Determiner();
+            progressBar1.Maximum = 100;
+            progressBar1.Minimum = 1;
+            var progress = new Progress<int>(v =>
+            {
+               progressBar1.Value = v;
+            });
+
             try
             {
                 // run main determiner function to perform the main function of the program
-                det.mainDeterminer(MLS_Input_File.Text, AIM_Input_File.Text, 0.2, 0.2, 0.5, 0.5);
+                await Task.Run(() => det.mainDeterminer(MLS_Input_File.Text, AIM_Input_File.Text, 0.2, 0.2, 0.5, 0.5, progress));
                 MessageBox.Show("Complete!");
             }
             catch (Exception ex)
