@@ -6,28 +6,38 @@ using System.Threading.Tasks;
 using Excel = Microsoft.Office.Interop.Excel;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace WindowsFormsApp1
 {
     class DeterminerWork
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="xlWorksheetMLS"></param>
-        /// <param name="xlWorksheetAIM"></param>
-        /// <param name="xlRangeMLS"></param>
-        /// <param name="xlRangeAIM"></param>
-        /// <param name="rangeCount"></param>
-        /// <param name="relevantCols"></param>
-        /// <param name="thresholds"></param>
-        /// <param name="progress"></param>
-        public void determinerDoWork(Excel._Worksheet xlWorksheetMLS, Excel._Worksheet xlWorksheetAIM,
-            Excel.Range xlRangeMLS, Excel.Range xlRangeAIM, Dictionary<string, int> rangeCount,
-            Dictionary<string, int> relevantCols, Dictionary<string, double> thresholds, IProgress<int> progress)
+        Excel.Range xlRangeMLS;
+        Excel.Range xlRangeAIM;
+        Dictionary<string, int> rangeCount;
+        Dictionary<string, int> relevantCols;
+        Dictionary<string, double> thresholds;
+        IProgress<int> progress;
+        int progressNum;
+        private static object xlLock = new object();
+
+        public DeterminerWork(Excel.Range xlRangeMLS1, Excel.Range xlRangeAIM1, Dictionary<string, int> rangeCount1,
+            Dictionary<string, int> relevantCols1, Dictionary<string, double> thresholds1, IProgress<int> progress1, int progressNum1)
+        {
+            xlRangeMLS = xlRangeMLS1;
+            xlRangeAIM = xlRangeAIM1;
+            rangeCount = rangeCount1;
+            relevantCols = relevantCols1;
+            thresholds = thresholds1;
+            progress = progress1;
+            progressNum = progressNum1;
+        }
+
+        public void determinerDoWork()
         {
             // loop through the files and do the main work
-            for (int currentMLSFile = 2; currentMLSFile <= rangeCount["rowCountMLS"]; currentMLSFile++)
+            for (int currentMLSFile = rangeCount["rowCountMLSMin"];
+                currentMLSFile <= rangeCount["rowCountMLS"]; currentMLSFile++)
             {
                 // initialize the variables that will determine if file in row closed
                 //
@@ -122,28 +132,31 @@ namespace WindowsFormsApp1
                     }
                 }
 
-                /// determine whether the file was closed with hatco or not and print to xl file
-                if (dateClosedMatch && addressMatch == 2 && ownerMatch == 2)
+                lock (xlLock)
                 {
-                    string closedGF = xlRangeAIM.Cells[ClosedGFNumRow, relevantCols["AIMFileNoCol"]].Value.ToString();
-                    xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSGFCol"]].Value = closedGF;
-                    Console.WriteLine("File on row " + currentMLSFile + " of MLS xl file closed with GF #"
-                        + closedGF);
-                }
-                else if (dateClosedMatch && addressMatch > 0 && ownerMatch > 0)
-                {
-                    xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSGFCol"]].Value = "likely closed";
-                    Console.WriteLine("File on row " + currentMLSFile + " likely closed");
-                }
-                else
-                {
-                    xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSGFCol"]].Value = "did not close";
-                    Console.WriteLine("File on row " + currentMLSFile + " did not close");
+                    /// determine whether the file was closed with hatco or not and print to xl file
+                    if (dateClosedMatch && addressMatch == 2 && ownerMatch == 2)
+                    {
+                        string closedGF = xlRangeAIM.Cells[ClosedGFNumRow, relevantCols["AIMFileNoCol"]].Value.ToString();
+                        xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSGFCol"]].Value = closedGF;
+                        Console.WriteLine("File on row " + currentMLSFile + " of MLS xl file closed with GF #"
+                            + closedGF);
+                    }
+                    else if (dateClosedMatch && addressMatch > 0 && ownerMatch > 0)
+                    {
+                        xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSGFCol"]].Value = "likely closed";
+                        Console.WriteLine("File on row " + currentMLSFile + " likely closed");
+                    }
+                    else
+                    {
+                        xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSGFCol"]].Value = "did not close";
+                        Console.WriteLine("File on row " + currentMLSFile + " did not close");
+                    }
                 }
 
                 // update progress bar after each row of MLS file
                 if (progress != null)
-                    progress.Report(100 / rangeCount["rowCountMLS"]);
+                    progress.Report(100 / progressNum);
             }
         }
     }

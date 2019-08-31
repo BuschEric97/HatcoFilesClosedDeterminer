@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Excel = Microsoft.Office.Interop.Excel;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace WindowsFormsApp1
 {
@@ -62,6 +63,7 @@ namespace WindowsFormsApp1
                     // do the main processing on the excel files and catch any exceptions that are thrown
                     // get the range of rows and columns for AIM excel file
                     rangeCount.Add("rowCountMLS", xlRangeMLS.Rows.Count);
+                    rangeCount.Add("rowCountMLSMin", 2);
                     rangeCount.Add("colCountMLS", xlRangeMLS.Columns.Count);
                     rangeCount.Add("rowCountAIM", xlRangeAIM.Rows.Count);
                     rangeCount.Add("colCountAIM", xlRangeAIM.Columns.Count);
@@ -108,13 +110,49 @@ namespace WindowsFormsApp1
                         }
                     }
 
+                    int progressNum = rangeCount["rowCountMLS"];
+                    int rowCountDivisor = (int) Math.Ceiling(rangeCount["rowCountMLS"] / 4.0);
+
                     // set the progress bar to the first little tick
                     if (progress != null)
-                        progress.Report(100 / rangeCount["rowCountMLS"]);
+                        progress.Report(100 / progressNum);
 
-                    DeterminerWork det = new DeterminerWork();
-                    det.determinerDoWork(xlWorksheetMLS, xlWorksheetAIM, xlRangeMLS, xlRangeAIM,
-                        rangeCount, relevantCols, thresholds, progress);
+                    // create thread 1
+                    rangeCount["rowCountMLS"] = rowCountDivisor;
+                    DeterminerWork det = new DeterminerWork(xlRangeMLS, xlRangeAIM, rangeCount, relevantCols,
+                        thresholds, progress, progressNum);
+                    Thread t1 = new Thread(new ThreadStart(det.determinerDoWork));
+
+                    // create thread 2
+                    rangeCount["rowCountMLS"] = rowCountDivisor * 2;
+                    rangeCount["rowCountMLSMin"] = rowCountDivisor;
+                    det = new DeterminerWork(xlRangeMLS, xlRangeAIM, rangeCount, relevantCols,
+                        thresholds, progress, progressNum);
+                    Thread t2 = new Thread(new ThreadStart(det.determinerDoWork));
+
+                    // create thread 3
+                    rangeCount["rowCountMLS"] = rowCountDivisor * 3;
+                    rangeCount["rowCountMLSMin"] = rowCountDivisor * 2;
+                    det = new DeterminerWork(xlRangeMLS, xlRangeAIM, rangeCount, relevantCols,
+                        thresholds, progress, progressNum);
+                    Thread t3 = new Thread(new ThreadStart(det.determinerDoWork));
+
+                    // create thread 4
+                    rangeCount["rowCountMLS"] = progressNum;
+                    rangeCount["rowCountMLSMin"] = rowCountDivisor * 3;
+                    det = new DeterminerWork(xlRangeMLS, xlRangeAIM, rangeCount, relevantCols,
+                        thresholds, progress, progressNum);
+                    Thread t4 = new Thread(new ThreadStart(det.determinerDoWork));
+
+                    // start all threads and don't continue until all threads have terminated
+                    t1.Start();
+                    t2.Start();
+                    t3.Start();
+                    t4.Start();
+                    t1.Join();
+                    //t2.Join();
+                    //t3.Join();
+                    //t4.Join();
                 }
                 catch (Exception ex) // if an exception is caught, close the excel files so they aren't held hostage
                 {
