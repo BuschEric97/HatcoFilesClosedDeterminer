@@ -28,13 +28,16 @@ namespace WindowsFormsApp1
             progressBar1.Minimum = 0;
             var progress = new Progress<int>(v =>
             {
-               progressBar1.Value = v;
+               progressBar1.Increment(v);
             });
 
             try
             {
                 // run main determiner function to perform the main function of the program
-                await Task.Run(() => det.mainDeterminer(MLS_Input_File.Text, AIM_Input_File.Text, 0.2, 0.2, 0.5, 0.5, progress));
+                progressBar1.Value = progressBar1.Minimum;
+                await Task.Run(() => det.mainDeterminer(MLS_Input_File.Text, AIM_Input_File.Text,
+                    0.2, 0.2, 0.5, 0.5, progress));
+                progressBar1.Value = progressBar1.Maximum;
                 MessageBox.Show("Complete!");
             }
             catch (Exception ex)

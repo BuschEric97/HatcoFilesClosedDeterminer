@@ -143,7 +143,7 @@ namespace WindowsFormsApp1
 
                 // update progress bar after each row of MLS file
                 if (progress != null)
-                    progress.Report(currentMLSFile * 100 / rangeCount["rowCountMLS"]);
+                    progress.Report(100 / rangeCount["rowCountMLS"]);
             }
         }
     }
