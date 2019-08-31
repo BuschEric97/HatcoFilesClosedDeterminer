@@ -49,12 +49,72 @@ namespace WindowsFormsApp1
                 Excel.Range xlRangeMLS = xlWorksheetMLS.UsedRange;
                 Excel.Range xlRangeAIM = xlWorksheetAIM.UsedRange;
 
+                Dictionary<string, int> rangeCount = new Dictionary<string, int>();
+                Dictionary<string, int> relevantCols = new Dictionary<string, int>();
+                Dictionary<string, double> thresholds = new Dictionary<string, double>();
+                thresholds.Add("addressThreshold", addressThreshold);
+                thresholds.Add("addressThresholdWeak", addressThresholdWeak);
+                thresholds.Add("ownerThreshold", ownerThreshold);
+                thresholds.Add("ownerThresholdWeak", ownerThresholdWeak);
+
                 try
                 {
                     // do the main processing on the excel files and catch any exceptions that are thrown
+                    // get the range of rows and columns for AIM excel file
+                    rangeCount.Add("rowCountMLS", xlRangeMLS.Rows.Count);
+                    rangeCount.Add("colCountMLS", xlRangeMLS.Columns.Count);
+                    rangeCount.Add("rowCountAIM", xlRangeAIM.Rows.Count);
+                    rangeCount.Add("colCountAIM", xlRangeAIM.Columns.Count);
+
+                    // relevant columns indeces
+                    relevantCols.Add("MLSOwnerCol", 0);
+                    relevantCols.Add("MLSAddressCol", 0);
+                    relevantCols.Add("MLSCloseDateCol", 0);
+                    relevantCols.Add("MLSGFCol", 0);
+                    relevantCols.Add("AIMFileNoCol", 0);
+                    relevantCols.Add("AIMCloseDateCol", 0);
+                    relevantCols.Add("AIMAddressCol", 0);
+                    relevantCols.Add("AIMSellerCol", 0);
+
+                    // determine the columns in MLS file that have relevant information
+                    for (int i = 1; i <= rangeCount["colCountMLS"]; i++)
+                    {
+                        if (xlRangeMLS.Cells[1, i].Value2 != null) // check that the cell is not empty
+                        {
+                            if (xlRangeMLS.Cells[1, i].Value2.ToString().Contains("Owner"))
+                                relevantCols["MLSOwnerCol"] = i;
+                            else if (xlRangeMLS.Cells[1, i].Value2.ToString().Contains("Address"))
+                                relevantCols["MLSAddressCol"] = i;
+                            else if (xlRangeMLS.Cells[1, i].Value2.ToString().Contains("Close Date"))
+                                relevantCols["MLSCloseDateCol"] = i;
+                            else if (xlRangeMLS.Cells[1, i].Value2.ToString().Contains("GF"))
+                                relevantCols["MLSGFCol"] = i;
+                        }
+                    }
+
+                    // determine the columns in AIM file that have relevant information
+                    for (int i = 1; i <= rangeCount["colCountAIM"]; i++)
+                    {
+                        if (xlRangeAIM.Cells[1, i].Value2 != null) // check that the cell is not empty
+                        {
+                            if (xlRangeAIM.Cells[1, i].Value2.ToString().Contains("File Number"))
+                                relevantCols["AIMFileNoCol"] = i;
+                            else if (xlRangeAIM.Cells[1, i].Value2.ToString().Contains("Date"))
+                                relevantCols["AIMCloseDateCol"] = i;
+                            else if (xlRangeAIM.Cells[1, i].Value2.ToString().Contains("Property Address"))
+                                relevantCols["AIMAddressCol"] = i;
+                            else if (xlRangeAIM.Cells[1, i].Value2.ToString().Contains("Seller"))
+                                relevantCols["AIMSellerCol"] = i;
+                        }
+                    }
+
+                    // set the progress bar to the first little tick
+                    if (progress != null)
+                        progress.Report(100 / rangeCount["rowCountMLS"]);
+
                     DeterminerWork det = new DeterminerWork();
-                    det.determinerDoWork(xlWorksheetMLS, xlWorksheetAIM, xlRangeMLS, xlRangeAIM, addressThreshold,
-                        addressThresholdWeak, ownerThreshold, ownerThresholdWeak, progress);
+                    det.determinerDoWork(xlWorksheetMLS, xlWorksheetAIM, xlRangeMLS, xlRangeAIM,
+                        rangeCount, relevantCols, thresholds, progress);
                 }
                 catch (Exception ex) // if an exception is caught, close the excel files so they aren't held hostage
                 {

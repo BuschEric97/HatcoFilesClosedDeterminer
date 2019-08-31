@@ -25,7 +25,7 @@ namespace WindowsFormsApp1
         {
             Determiner det = new Determiner();
             progressBar1.Maximum = 100;
-            progressBar1.Minimum = 1;
+            progressBar1.Minimum = 0;
             var progress = new Progress<int>(v =>
             {
                progressBar1.Value = v;
