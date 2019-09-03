@@ -12,28 +12,43 @@ namespace WindowsFormsApp1
 {
     class DeterminerWork
     {
-        Excel.Range xlRangeMLS;
-        Excel.Range xlRangeAIM;
-        Dictionary<string, int> rangeCount;
-        Dictionary<string, int> relevantCols;
-        Dictionary<string, double> thresholds;
-        IProgress<int> progress;
-        int progressNum;
         private static object xlLock = new object();
 
-        public DeterminerWork(Excel.Range xlRangeMLS1, Excel.Range xlRangeAIM1, Dictionary<string, int> rangeCount1,
-            Dictionary<string, int> relevantCols1, Dictionary<string, double> thresholds1, IProgress<int> progress1, int progressNum1)
+        public void determinerThreadDoWork(object data)
         {
-            xlRangeMLS = xlRangeMLS1;
-            xlRangeAIM = xlRangeAIM1;
-            rangeCount = rangeCount1;
-            relevantCols = relevantCols1;
-            thresholds = thresholds1;
-            progress = progress1;
-            progressNum = progressNum1;
+            DeterminerThread det = null; // get processing data
+
+            lock (xlLock)
+            {
+                det = (DeterminerThread)data; // get processing data
+
+                // get the range of the MLS file that this thread will work on
+                int threadId = Thread.CurrentThread.ManagedThreadId % 4;
+                int rowCountDivisor = (int)Math.Ceiling(det.progressNum / 4.0);
+                if (threadId == 0)
+                    det.rangeCount["rowCountMLSMin"] = 2;
+                else
+                    det.rangeCount["rowCountMLSMin"] = (rowCountDivisor * threadId) + 1;
+                if (threadId == 3)
+                    det.rangeCount["rowCountMLS"] = det.progressNum;
+                else
+                    det.rangeCount["rowCountMLS"] = (rowCountDivisor * (threadId + 1)) + 1;
+
+                Console.WriteLine("Current thread: " + threadId.ToString());
+                Console.WriteLine("rowCountMLS: " + det.rangeCount["rowCountMLS"].ToString());
+                Console.WriteLine("rowCountMLSMin: " + det.rangeCount["rowCountMLSMin"].ToString());
+
+                // process the given range of the MLS file
+                determinerDoWork(det.xlRangeMLS, det.xlRangeAIM, det.rangeCount, det.relevantCols,
+                    det.thresholds, det.progress, det.progressNum);
+            }
         }
 
-        public void determinerDoWork()
+        /// <summary>
+        /// Do the main work of mainDeterminer from Determiner class
+        /// </summary>
+        public void determinerDoWork(Excel.Range xlRangeMLS, Excel.Range xlRangeAIM, Dictionary<string, int> rangeCount,
+            Dictionary<string, int> relevantCols, Dictionary<string, double> thresholds, IProgress<int> progress, int progressNum)
         {
             // loop through the files and do the main work
             for (int currentMLSFile = rangeCount["rowCountMLSMin"];
@@ -158,6 +173,29 @@ namespace WindowsFormsApp1
                 if (progress != null)
                     progress.Report(100 / progressNum);
             }
+        }
+    }
+
+    class DeterminerThread
+    {
+        public Excel.Range xlRangeMLS;
+        public Excel.Range xlRangeAIM;
+        public Dictionary<string, int> rangeCount;
+        public Dictionary<string, int> relevantCols;
+        public Dictionary<string, double> thresholds;
+        public IProgress<int> progress;
+        public int progressNum;
+
+        public DeterminerThread(Excel.Range xlRangeMLS1, Excel.Range xlRangeAIM1, Dictionary<string, int> rangeCount1,
+            Dictionary<string, int> relevantCols1, Dictionary<string, double> thresholds1, IProgress<int> progress1, int progressNum1)
+        {
+            xlRangeMLS = xlRangeMLS1;
+            xlRangeAIM = xlRangeAIM1;
+            rangeCount = rangeCount1;
+            relevantCols = relevantCols1;
+            thresholds = thresholds1;
+            progress = progress1;
+            progressNum = progressNum1;
         }
     }
 }

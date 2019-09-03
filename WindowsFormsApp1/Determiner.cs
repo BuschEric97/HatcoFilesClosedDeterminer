@@ -111,48 +111,46 @@ namespace WindowsFormsApp1
                     }
 
                     int progressNum = rangeCount["rowCountMLS"];
-                    int rowCountDivisor = (int) Math.Ceiling(rangeCount["rowCountMLS"] / 4.0);
 
                     // set the progress bar to the first little tick
                     if (progress != null)
                         progress.Report(100 / progressNum);
 
-                    // create thread 1
-                    rangeCount["rowCountMLS"] = rowCountDivisor;
-                    DeterminerWork det = new DeterminerWork(xlRangeMLS, xlRangeAIM, rangeCount, relevantCols,
-                        thresholds, progress, progressNum);
-                    Thread t1 = new Thread(new ThreadStart(det.determinerDoWork));
+                    // create the objects for the main work to be done
+                    DeterminerWork det1 = new DeterminerWork();
+                    DeterminerWork det2 = new DeterminerWork();
+                    DeterminerWork det3 = new DeterminerWork();
+                    DeterminerWork det4 = new DeterminerWork();
 
-                    // create thread 2
-                    rangeCount["rowCountMLS"] = rowCountDivisor * 2;
-                    rangeCount["rowCountMLSMin"] = rowCountDivisor;
-                    det = new DeterminerWork(xlRangeMLS, xlRangeAIM, rangeCount, relevantCols,
+                    // create the data objects for the threads to use
+                    DeterminerThread detData1 = new DeterminerThread(xlRangeMLS, xlRangeAIM, rangeCount, relevantCols,
                         thresholds, progress, progressNum);
-                    Thread t2 = new Thread(new ThreadStart(det.determinerDoWork));
+                    DeterminerThread detData2 = new DeterminerThread(xlRangeMLS, xlRangeAIM, rangeCount, relevantCols,
+                        thresholds, progress, progressNum);
+                    DeterminerThread detData3 = new DeterminerThread(xlRangeMLS, xlRangeAIM, rangeCount, relevantCols,
+                        thresholds, progress, progressNum);
+                    DeterminerThread detData4 = new DeterminerThread(xlRangeMLS, xlRangeAIM, rangeCount, relevantCols,
+                        thresholds, progress, progressNum);
 
-                    // create thread 3
-                    rangeCount["rowCountMLS"] = rowCountDivisor * 3;
-                    rangeCount["rowCountMLSMin"] = rowCountDivisor * 2;
-                    det = new DeterminerWork(xlRangeMLS, xlRangeAIM, rangeCount, relevantCols,
-                        thresholds, progress, progressNum);
-                    Thread t3 = new Thread(new ThreadStart(det.determinerDoWork));
-
-                    // create thread 4
-                    rangeCount["rowCountMLS"] = progressNum;
-                    rangeCount["rowCountMLSMin"] = rowCountDivisor * 3;
-                    det = new DeterminerWork(xlRangeMLS, xlRangeAIM, rangeCount, relevantCols,
-                        thresholds, progress, progressNum);
-                    Thread t4 = new Thread(new ThreadStart(det.determinerDoWork));
+                    // create the threads
+                    Thread t1 = new Thread(det1.determinerThreadDoWork);
+                    Thread t2 = new Thread(det2.determinerThreadDoWork);
+                    Thread t3 = new Thread(det3.determinerThreadDoWork);
+                    Thread t4 = new Thread(det4.determinerThreadDoWork);
 
                     // start all threads and don't continue until all threads have terminated
-                    t1.Start();
-                    t2.Start();
-                    t3.Start();
-                    t4.Start();
+                    t1.SetApartmentState(ApartmentState.MTA);
+                    t1.Start(detData1);
+                    t2.SetApartmentState(ApartmentState.MTA);
+                    t2.Start(detData2);
+                    t3.SetApartmentState(ApartmentState.MTA);
+                    t3.Start(detData3);
+                    t4.SetApartmentState(ApartmentState.MTA);
+                    t4.Start(detData4);
                     t1.Join();
-                    //t2.Join();
-                    //t3.Join();
-                    //t4.Join();
+                    t2.Join();
+                    t3.Join();
+                    t4.Join();
                 }
                 catch (Exception ex) // if an exception is caught, close the excel files so they aren't held hostage
                 {
