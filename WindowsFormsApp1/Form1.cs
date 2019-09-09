@@ -14,9 +14,9 @@ using System.Runtime.InteropServices;
 
 namespace WindowsFormsApp1
 {
-    public partial class Form1 : Form
+    public partial class mainForm : Form
     {
-        public Form1()
+        public mainForm()
         {
             InitializeComponent();
         }
@@ -59,6 +59,17 @@ namespace WindowsFormsApp1
             openFileDialogAIM.ShowHelp = true;
             openFileDialogAIM.ShowDialog();
             AIM_Input_File.Text = openFileDialogAIM.FileName;
+        }
+
+        /// <summary>
+        /// Event Handler for when the whole application closes. It is in Form1.cs
+        /// so that it has access to the file names to make sure they are closed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        static public void OnApplicationExit(object sender, EventArgs e)
+        {
+            Console.WriteLine("Exiting Application");
         }
     }
 }

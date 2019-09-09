@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace WindowsFormsApp1
 {
@@ -16,7 +17,8 @@ namespace WindowsFormsApp1
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            Application.ApplicationExit += new EventHandler(mainForm.OnApplicationExit);
+            Application.Run(new mainForm());
         }
     }
 }

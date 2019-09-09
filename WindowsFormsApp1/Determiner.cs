@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Excel = Microsoft.Office.Interop.Excel;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 
 namespace WindowsFormsApp1
 {
@@ -27,6 +28,8 @@ namespace WindowsFormsApp1
         public void mainDeterminer (string MLSFileName, string AIMFileName, double addressThreshold,
             double addressThresholdWeak, double ownerThreshold, double ownerThresholdWeak, IProgress<int> progress)
         {
+            Application.UseWaitCursor = true; // set the cursor to waiting symbol
+
             // open all excel files for use
             Excel.Application xlApp = new Excel.Application();
             Excel.Workbook xlWorkbookMLS = null;
@@ -171,6 +174,8 @@ namespace WindowsFormsApp1
                 xlApp.Quit();
                 Marshal.ReleaseComObject(xlApp);
             }
+
+            Application.UseWaitCursor = false; // set cursor back to default
         }
     }
 }
