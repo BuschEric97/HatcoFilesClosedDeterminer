@@ -36,7 +36,7 @@ namespace WindowsFormsApp1
                 // run main determiner function to perform the main function of the program
                 progressBar1.Value = progressBar1.Minimum;
                 await Task.Run(() => det.mainDeterminer(MLS_Input_File.Text, AIM_Input_File.Text,
-                    0.2, 0.2, 0.5, 0.5, progress));
+                    0.2, 0.2, 1, 1, progress));
                 progressBar1.Value = progressBar1.Maximum;
                 MessageBox.Show("Complete!");
             }

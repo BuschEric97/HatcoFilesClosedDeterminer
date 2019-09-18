@@ -56,44 +56,15 @@ namespace WindowsFormsApp1
                             if ((MLSCloseDate - AIMCloseDate).TotalDays <= 15) // check that the two close dates are within 15 days of each other
                             {
                                 dateClosedMatch = true;
-                                Console.WriteLine("Found match in days between row " + currentMLSFile
-                                    + " in MLS xl file and row " + currentAIMFile + " in AIM xl file");
-                            }
-                        }
-                    }
-                }
-
-
-                /// determine if property addresses are a match only if date closed is already a match
-                if (dateClosedMatch && xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSAddressCol"]].Value2 != null)
-                {
-                    for (int currentAIMFile = 2; currentAIMFile <= rangeCount["rowCountAIM"]; currentAIMFile++)
-                    {
-                        if (xlRangeAIM.Cells[currentAIMFile, relevantCols["AIMAddressCol"]].Value2 != null)
-                        {
-                            string addressMLS = xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSAddressCol"]].Value2.ToString();
-                            string addressAIM = xlRangeAIM.Cells[currentAIMFile, relevantCols["AIMAddressCol"]].Value2.ToString();
-                            int addressDistance = StringDistance.GetStringDistance(addressMLS, addressAIM); // get distance between the two strings
-
-                            // check addressDistance against the percentage threshold of the longer test string to see if it is a match
-                            if (addressDistance <= Math.Ceiling(thresholds["addressThreshold"] * Math.Max(addressMLS.Length, addressAIM.Length)))
-                            {
-                                addressMatch = 2;
-                                Console.WriteLine("Found match in address between row " + currentMLSFile
-                                    + " in MLS xl file and row " + currentAIMFile + " in AIM xl file");
-                            }
-                            else if (addressDistance <= Math.Ceiling(thresholds["addressThresholdWeak"] * Math.Max(addressMLS.Length, addressAIM.Length)))
-                            {
-                                addressMatch = 1;
-                                Console.WriteLine("Found likely match in address between row " + currentMLSFile
-                                    + " in MLS xl file and row " + currentAIMFile + " in AIM xl file");
+                                //Console.WriteLine("Found match in days between row " + currentMLSFile
+                                //    + " in MLS xl file and row " + currentAIMFile + " in AIM xl file");
                             }
                         }
                     }
                 }
 
                 /// determine if owner/seller name are a match only if date closed and addrees are already a match
-                if (dateClosedMatch && addressMatch > 0 && xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSOwnerCol"]].Value2 != null)
+                if (dateClosedMatch && xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSOwnerCol"]].Value2 != null)
                 {
                     for (int currentAIMFile = 2; currentAIMFile <= rangeCount["rowCountAIM"]; currentAIMFile++)
                     {
@@ -107,15 +78,43 @@ namespace WindowsFormsApp1
                             if (ownerDistance <= Math.Ceiling(thresholds["ownerThreshold"] * Math.Max(owner.Length, seller.Length)))
                             {
                                 ownerMatch = 2;
-                                ClosedGFNumRow = currentAIMFile;
                                 Console.WriteLine("Found match in owner/seller between row " + currentMLSFile
                                     + " in MLS xl file and row " + currentAIMFile + " in AIM xl file");
-                                break; // if a match is found, there's no need to search any further
                             }
                             else if (ownerDistance <= Math.Ceiling(thresholds["ownerThresholdWeak"] * Math.Max(owner.Length, seller.Length)))
                             {
                                 ownerMatch = 1;
                                 Console.WriteLine("Found likely match in owner/seller between row " + currentMLSFile
+                                    + " in MLS xl file and row " + currentAIMFile + " in AIM xl file");
+                            }
+                        }
+                    }
+                }
+
+                /// determine if property addresses are a match only if date closed is already a match
+                if (dateClosedMatch && ownerMatch > 0 && xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSAddressCol"]].Value2 != null)
+                {
+                    for (int currentAIMFile = 2; currentAIMFile <= rangeCount["rowCountAIM"]; currentAIMFile++)
+                    {
+                        if (xlRangeAIM.Cells[currentAIMFile, relevantCols["AIMAddressCol"]].Value2 != null)
+                        {
+                            string addressMLS = xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSAddressCol"]].Value2.ToString();
+                            string addressAIM = xlRangeAIM.Cells[currentAIMFile, relevantCols["AIMAddressCol"]].Value2.ToString();
+                            int addressDistance = StringDistance.GetStringDistance(addressMLS, addressAIM); // get distance between the two strings
+
+                            // check addressDistance against the percentage threshold of the longer test string to see if it is a match
+                            if (addressDistance <= Math.Ceiling(thresholds["addressThreshold"] * Math.Max(addressMLS.Length, addressAIM.Length)))
+                            {
+                                addressMatch = 2;
+                                ClosedGFNumRow = currentAIMFile;
+                                Console.WriteLine("Found match in address between row " + currentMLSFile
+                                    + " in MLS xl file and row " + currentAIMFile + " in AIM xl file");
+                                break; // if a match is found, there's no need to search any further
+                            }
+                            else if (addressDistance <= Math.Ceiling(thresholds["addressThresholdWeak"] * Math.Max(addressMLS.Length, addressAIM.Length)))
+                            {
+                                addressMatch = 1;
+                                Console.WriteLine("Found likely match in address between row " + currentMLSFile
                                     + " in MLS xl file and row " + currentAIMFile + " in AIM xl file");
                             }
                         }
