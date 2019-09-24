@@ -37,7 +37,8 @@ namespace WindowsFormsApp1
                 bool dateClosedMatch = false;
                 int addressMatch = 0;
                 int ownerMatch = 0;
-                int ClosedGFNumRow = 2;
+                int closedGFNumRow = 2;
+                List<int> consideredRowsAIM = new List<int>();
 
                 /// determine if date closed is a match
                 if (xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSCloseDateCol"]].Value2 != null) // check that the next MLS close date cell is not empty
@@ -56,6 +57,7 @@ namespace WindowsFormsApp1
 
                             if ((MLSCloseDate - AIMCloseDate).TotalDays <= 15) // check that the two close dates are within 15 days of each other
                             {
+                                consideredRowsAIM.Add(currentAIMFile); // add the current AIM file row to the list of considered AIM rows
                                 dateClosedMatch = true;
                                 //Console.WriteLine("Found match in days between row " + currentMLSFile
                                 //    + " in MLS xl file and row " + currentAIMFile + " in AIM xl file");
@@ -69,7 +71,8 @@ namespace WindowsFormsApp1
                 {
                     for (int currentAIMFile = 2; currentAIMFile <= rangeCount["rowCountAIM"]; currentAIMFile++)
                     {
-                        if (xlRangeAIM.Cells[currentAIMFile, relevantCols["AIMSellerCol"]].Value2 != null)
+                        if (xlRangeAIM.Cells[currentAIMFile, relevantCols["AIMSellerCol"]].Value2 != null &&
+                            consideredRowsAIM.Contains(currentAIMFile))
                         {
                             string owner = xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSOwnerCol"]].Value2.ToString();
                             string seller = xlRangeAIM.Cells[currentAIMFile, relevantCols["AIMSellerCol"]].Value2.ToString();
@@ -92,6 +95,8 @@ namespace WindowsFormsApp1
                                 //Console.WriteLine("Found likely match in owner/seller between row " + currentMLSFile
                                 //    + " in MLS xl file and row " + currentAIMFile + " in AIM xl file");
                             }
+                            else
+                                consideredRowsAIM.Remove(currentAIMFile);
                         }
                     }
                 }
@@ -101,7 +106,8 @@ namespace WindowsFormsApp1
                 {
                     for (int currentAIMFile = 2; currentAIMFile <= rangeCount["rowCountAIM"]; currentAIMFile++)
                     {
-                        if (xlRangeAIM.Cells[currentAIMFile, relevantCols["AIMAddressCol"]].Value2 != null)
+                        if (xlRangeAIM.Cells[currentAIMFile, relevantCols["AIMAddressCol"]].Value2 != null &&
+                            consideredRowsAIM.Contains(currentAIMFile))
                         {
                             // get the address strings from the xl files and parse them by the space character
                             string addressMLS = xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSAddressCol"]].Value2.ToString();
@@ -121,7 +127,7 @@ namespace WindowsFormsApp1
                                 if (addressDistance <= addressThresholdUpdated)
                                 {
                                     addressMatch = 2;
-                                    ClosedGFNumRow = currentAIMFile;
+                                    closedGFNumRow = currentAIMFile;
                                     Console.WriteLine("Found match in address between row " + currentMLSFile
                                         + " in MLS xl file and row " + currentAIMFile + " in AIM xl file");
                                     break; // if a match is found, there's no need to search any further
@@ -132,15 +138,30 @@ namespace WindowsFormsApp1
                                     Console.WriteLine("Found likely match in address between row " + currentMLSFile
                                         + " in MLS xl file and row " + currentAIMFile + " in AIM xl file");
                                 }
+                                else
+                                    consideredRowsAIM.Remove(currentAIMFile);
                             }
                         }
                     }
                 }
 
+                /// go through the remaining files in consideredRowsAIM and determine which one is the best match
+                for (int currentAIMFile = 2; currentAIMFile < consideredRowsAIM.Count; currentAIMFile++)
+                {
+                    string addressMLS = xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSAddressCol"]].Value2.ToString();
+                    string addressAIMNew = xlRangeAIM.Cells[currentAIMFile, relevantCols["AIMAddressCol"]].Value2.ToString();
+                    string addressAIMPrev = xlRangeAIM.Cells[closedGFNumRow, relevantCols["AIMAddressCol"]].Value2.ToString();
+                    int addressDistanceNew = StringDistance.GetStringDistance(addressMLS, addressAIMNew);
+                    int addressDistancePrev = StringDistance.GetStringDistance(addressMLS, addressAIMPrev);
+
+                    if (addressDistanceNew < addressDistancePrev)
+                        closedGFNumRow = currentAIMFile;
+                }
+
                 /// determine whether the file was closed with hatco or not and print to xl file
                 if (dateClosedMatch && addressMatch == 2 && ownerMatch == 2)
                 {
-                    string closedGF = xlRangeAIM.Cells[ClosedGFNumRow, relevantCols["AIMFileNoCol"]].Value.ToString();
+                    string closedGF = xlRangeAIM.Cells[closedGFNumRow, relevantCols["AIMFileNoCol"]].Value.ToString();
                     xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSGFCol"]].Value = closedGF;
                     Console.WriteLine("File on row " + currentMLSFile + " of MLS xl file closed with GF #"
                         + closedGF);
