@@ -26,7 +26,8 @@ namespace WindowsFormsApp1
         /// <param name="addressThreshold"></param>
         /// <param name="ownerThreshold"></param>
         public void mainDeterminer (string MLSFileName, string AIMFileName, double addressThreshold,
-            double addressThresholdWeak, double ownerThreshold, double ownerThresholdWeak, IProgress<int> progress)
+            double addressThresholdWeak, double ownerThreshold, double ownerThresholdWeak, IProgress<int> progress,
+            mainForm form)
         {
             Application.UseWaitCursor = true; // set the cursor to waiting symbol
 
@@ -78,6 +79,7 @@ namespace WindowsFormsApp1
                     relevantCols.Add("AIMCloseDateCol", 0);
                     relevantCols.Add("AIMAddressCol", 0);
                     relevantCols.Add("AIMSellerCol", 0);
+                    relevantCols.Add("AIMEscrowCol", 0);
 
                     // determine the columns in MLS file that have relevant information
                     for (int i = 1; i <= rangeCount["colCountMLS"]; i++)
@@ -108,8 +110,16 @@ namespace WindowsFormsApp1
                                 relevantCols["AIMAddressCol"] = i;
                             else if (xlRangeAIM.Cells[1, i].Value2.ToString().Contains("Seller"))
                                 relevantCols["AIMSellerCol"] = i;
+                            else if (xlRangeAIM.Cells[1, i].Value2.ToString().Contains("Escrow"))
+                                relevantCols["AIMEscrowCol"] = i;
                         }
                     }
+
+                    // add new columns to MLS file
+                    relevantCols.Add("MLSLikelyCloseCol", rangeCount["colCountMLS"] + 1);
+                    relevantCols.Add("MLSEscrowOfficerCol", rangeCount["colCountMLS"] + 2);
+                    xlRangeMLS.Cells[1, relevantCols["MLSLikelyCloseCol"]].Value = "Likely Closed";
+                    xlRangeMLS.Cells[1, relevantCols["MLSEscrowOfficerCol"]].Value = "Escrow Officer";
 
                     // set the progress bar to the first little tick
                     if (progress != null)
@@ -117,7 +127,7 @@ namespace WindowsFormsApp1
 
                     DeterminerWork det = new DeterminerWork();
                     det.determinerDoWork(xlWorksheetMLS, xlWorksheetAIM, xlRangeMLS, xlRangeAIM,
-                        rangeCount, relevantCols, thresholds, progress);
+                        rangeCount, relevantCols, thresholds, progress, form);
                 }
                 catch (Exception ex) // if an exception is caught, close the excel files so they aren't held hostage
                 {

@@ -7,6 +7,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 using System.IO;
 using System.Runtime.InteropServices;
 using USAddress;
+using System.Windows.Forms;
 
 namespace WindowsFormsApp1
 {
@@ -25,7 +26,8 @@ namespace WindowsFormsApp1
         /// <param name="progress"></param>
         public void determinerDoWork(Excel._Worksheet xlWorksheetMLS, Excel._Worksheet xlWorksheetAIM,
             Excel.Range xlRangeMLS, Excel.Range xlRangeAIM, Dictionary<string, int> rangeCount,
-            Dictionary<string, int> relevantCols, Dictionary<string, double> thresholds, IProgress<int> progress)
+            Dictionary<string, int> relevantCols, Dictionary<string, double> thresholds, IProgress<int> progress,
+            mainForm form)
         {
             // loop through the files and do the main work
             for (int currentMLSFile = 2; currentMLSFile <= rangeCount["rowCountMLS"]; currentMLSFile++)
@@ -76,28 +78,97 @@ namespace WindowsFormsApp1
                         {
                             string owner = xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSOwnerCol"]].Value2.ToString();
                             string seller = xlRangeAIM.Cells[currentAIMFile, relevantCols["AIMSellerCol"]].Value2.ToString();
-                            int ownerDistance = StringDistance.GetStringDistance(owner, seller); // get distance between the two strings
+                            string[] parsedOwner = owner.ToLower().Split(' ');
+                            string[] parsedSeller = seller.ToLower().Split(' ');
 
-                            // compute updated thresholds
-                            int ownerThresholdUpdated = (int)Math.Ceiling(thresholds["ownerThreshold"] * Math.Max(owner.Length, seller.Length));
-                            int ownerThresholdWeakUpdated = (int)Math.Ceiling(thresholds["ownerThresholdWeak"] * Math.Max(owner.Length, seller.Length));
+                            // Check that the first 3 (if applicable) words
+                            // in the owner string reasonably match with a
+                            // word in the seller string
+                            bool fnLnMatch = false;
+                            if (parsedOwner.Length == 1)
+                            {
+                                for (int i = 0; i < parsedSeller.Length; i++)
+                                {
+                                    if (StringDistance.GetStringDistance(parsedOwner[0], parsedSeller[i]) <= 1)
+                                    {
+                                        fnLnMatch = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            else if (parsedOwner.Length == 2)
+                            {
+                                int numMatches = 0; // number of owner words that matched with seller words
+
+                                for (int i = 0; i < parsedSeller.Length; i++)
+                                    if (StringDistance.GetStringDistance(parsedOwner[0], parsedSeller[i]) <= 1)
+                                        numMatches++;
+                                for (int i = 0; i < parsedSeller.Length; i++)
+                                    if (StringDistance.GetStringDistance(parsedOwner[1], parsedSeller[i]) <= 1)
+                                        numMatches++;
+
+                                if (numMatches >= 1)
+                                    fnLnMatch = true;
+                            }
+                            else if  (parsedOwner.Length == 3)
+                            {
+                                int numMatches = 0; // number of owner words that matched with seller words
+
+                                for (int i = 0; i < parsedSeller.Length; i++)
+                                    if (StringDistance.GetStringDistance(parsedOwner[0], parsedSeller[i]) <= 1)
+                                    {
+                                        numMatches++;
+                                        break;
+                                    }
+                                for (int i = 0; i < parsedSeller.Length; i++)
+                                    if (StringDistance.GetStringDistance(parsedOwner[1], parsedSeller[i]) <= 1)
+                                    {
+                                        numMatches++;
+                                        break;
+                                    }
+                                for (int i = 0; i < parsedSeller.Length; i++)
+                                    if (StringDistance.GetStringDistance(parsedOwner[2], parsedSeller[i]) <= 1)
+                                    {
+                                        numMatches++;
+                                        break;
+                                    }
+
+                                if (numMatches >= 2)
+                                    fnLnMatch = true;
+                            }
+                            else
+                            {
+                                int numMatches = 0; // number of owner words that matches with seller words
+                                for (int i = 0, j = 1; i < parsedOwner.Length && j <= 3; i++)
+                                {
+                                    if (!((parsedOwner[i].Length == 1) || (parsedOwner[i].Length == 2)
+                                        || (parsedOwner[i].ToLower() == "and"))) // if not a word that should be ignored
+                                    { // words that should be ignored: "and" and words with length 1 or 2
+                                        // go through parsedSeller and check that the current parsedOwner word is contained
+                                        for (int k = 0; k < parsedSeller.Length; k++)
+                                            if (StringDistance.GetStringDistance(parsedOwner[i], parsedSeller[k]) <= 1)
+                                            {
+                                                numMatches++;
+                                                break; // break out of inner for loop
+                                            }
+                                        j++;
+                                    }
+                                }
+
+                                if (numMatches >= 2)
+                                    fnLnMatch = true;
+                            }
 
                             // check ownerDistance against the percentage threshold of the longer test string to see if it is a match
-                            if (ownerDistance <= ownerThresholdUpdated)
+                            if (fnLnMatch)
                             {
                                 ownerMatch = 2;
-                                //Console.WriteLine("Found match in owner/seller between row " + currentMLSFile
-                                //    + " in MLS xl file and row " + currentAIMFile + " in AIM xl file");
-                            }
-                            else if (ownerDistance <= ownerThresholdWeakUpdated && ownerDistance > ownerThresholdUpdated)
-                            {
-                                ownerMatch = 1;
-                                //Console.WriteLine("Found likely match in owner/seller between row " + currentMLSFile
-                                //    + " in MLS xl file and row " + currentAIMFile + " in AIM xl file");
                             }
                             else
                                 consideredRowsAIM.Remove(currentAIMFile);
                         }
+                        else
+                            consideredRowsAIM.Remove(currentAIMFile);
                     }
                 }
 
@@ -135,41 +206,33 @@ namespace WindowsFormsApp1
                                 else if (addressDistance <= addressThresholdWeakUpdated && addressDistance > addressThresholdUpdated)
                                 {
                                     addressMatch = 1;
+                                    closedGFNumRow = currentAIMFile;
                                     Console.WriteLine("Found likely match in address between row " + currentMLSFile
                                         + " in MLS xl file and row " + currentAIMFile + " in AIM xl file");
                                 }
-                                else
-                                    consideredRowsAIM.Remove(currentAIMFile);
                             }
                         }
                     }
-                }
-
-                /// go through the remaining files in consideredRowsAIM and determine which one is the best match
-                for (int currentAIMFile = 2; currentAIMFile < consideredRowsAIM.Count; currentAIMFile++)
-                {
-                    string addressMLS = xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSAddressCol"]].Value2.ToString();
-                    string addressAIMNew = xlRangeAIM.Cells[currentAIMFile, relevantCols["AIMAddressCol"]].Value2.ToString();
-                    string addressAIMPrev = xlRangeAIM.Cells[closedGFNumRow, relevantCols["AIMAddressCol"]].Value2.ToString();
-                    int addressDistanceNew = StringDistance.GetStringDistance(addressMLS, addressAIMNew);
-                    int addressDistancePrev = StringDistance.GetStringDistance(addressMLS, addressAIMPrev);
-
-                    if (addressDistanceNew < addressDistancePrev)
-                        closedGFNumRow = currentAIMFile;
                 }
 
                 /// determine whether the file was closed with hatco or not and print to xl file
                 if (dateClosedMatch && addressMatch == 2 && ownerMatch == 2)
                 {
                     string closedGF = xlRangeAIM.Cells[closedGFNumRow, relevantCols["AIMFileNoCol"]].Value.ToString();
+                    string escrOff = xlRangeAIM.Cells[closedGFNumRow, relevantCols["AIMEscrowCol"]].Value.ToString();
                     xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSGFCol"]].Value = closedGF;
+                    xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSEscrowOfficerCol"]].Value = escrOff;
                     Console.WriteLine("File on row " + currentMLSFile + " of MLS xl file closed with GF #"
                         + closedGF);
                 }
                 else if (dateClosedMatch && addressMatch > 0 && ownerMatch > 0)
                 {
-                    xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSGFCol"]].Value = "likely closed";
-                    Console.WriteLine("File on row " + currentMLSFile + " likely closed");
+                    string closedGF = xlRangeAIM.Cells[closedGFNumRow, relevantCols["AIMFileNoCol"]].Value.ToString();
+                    string escrOff = xlRangeAIM.Cells[closedGFNumRow, relevantCols["AIMEscrowCol"]].Value.ToString();
+                    xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSGFCol"]].Value = closedGF;
+                    xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSLikelyCloseCol"]].Value = "true";
+                    xlRangeMLS.Cells[currentMLSFile, relevantCols["MLSEscrowOfficerCol"]].Value = escrOff;
+                    Console.WriteLine("File on row " + currentMLSFile + " likely closed with GF #" + closedGF);
                 }
                 else
                 {
@@ -180,6 +243,13 @@ namespace WindowsFormsApp1
                 // update progress bar after each row of MLS file
                 if (progress != null)
                     progress.Report(100 / rangeCount["rowCountMLS"]);
+
+                string progressDetailedUpdate = (currentMLSFile - 1).ToString() + "/" + (rangeCount["rowCountMLS"] - 1).ToString();
+                MethodInvoker inv = delegate
+                {
+                    form.progressDetailed.Text = progressDetailedUpdate;
+                };
+                form.Invoke(inv);
             }
         }
     }
