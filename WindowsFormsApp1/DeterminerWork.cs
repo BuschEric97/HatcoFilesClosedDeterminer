@@ -163,9 +163,13 @@ namespace WindowsFormsApp1
                             if (fnLnMatch)
                             {
                                 ownerMatch = 2;
+                                break;
                             }
                             else
+                            {
+                                ownerMatch = 1;
                                 consideredRowsAIM.Remove(currentAIMFile);
+                            }
                         }
                         else
                             consideredRowsAIM.Remove(currentAIMFile);
