@@ -192,6 +192,36 @@ namespace WindowsFormsApp1
 
                             if (parsedAddressMLS[0] == parsedAddressAIM[0]) // check that the address numbers match
                             {
+                                // account for condominium, private road, and country road
+                                if (addressMLS.ToLower().Contains("condominium"))
+                                {
+                                    addressMLS = addressMLS.ToLower().Replace("condominium", "");
+                                    addressAIM = addressAIM.ToLower();
+                                } else if (addressAIM.ToLower().Contains("condominium"))
+                                {
+                                    addressMLS = addressMLS.ToLower();
+                                    addressAIM = addressAIM.ToLower().Replace("condominium", "");
+                                }
+                                if (addressMLS.ToLower().Contains("pr") && addressAIM.ToLower().Contains("private road"))
+                                {
+                                    addressMLS = addressMLS.ToLower().Replace("pr", "");
+                                    addressAIM = addressAIM.ToLower().Replace("private road", "");
+                                } else if (addressMLS.ToLower().Contains("private road") && addressAIM.ToLower().Contains("pr"))
+                                {
+                                    addressMLS = addressMLS.ToLower().Replace("private road", "");
+                                    addressAIM = addressAIM.ToLower().Replace("pr", "");
+                                }
+                                if (addressMLS.ToLower().Contains("cr") && addressAIM.ToLower().Contains("county road"))
+                                {
+                                    addressMLS = addressMLS.ToLower().Replace("cr", "");
+                                    addressAIM = addressAIM.ToLower().Replace("county road", "");
+                                }
+                                else if (addressMLS.ToLower().Contains("county road") && addressAIM.ToLower().Contains("cr"))
+                                {
+                                    addressMLS = addressMLS.ToLower().Replace("county road", "");
+                                    addressAIM = addressAIM.ToLower().Replace("cr", "");
+                                }
+
                                 int addressDistance = StringDistance.GetStringDistance(addressMLS, addressAIM); // get distance between the two strings
 
                                 // compute updated thresholds
